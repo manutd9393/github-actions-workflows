@@ -1,0 +1,46 @@
+name: Terraform Azure CI
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        required: false
+        type: string
+        default: '.'
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    name: Terraform Init, Validate, Format, and Plan for Azure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.0
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: ${{ inputs.working_directory }}
+
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ${{ inputs.working_directory }}
